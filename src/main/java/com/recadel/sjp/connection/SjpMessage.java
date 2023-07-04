@@ -40,15 +40,15 @@ public class SjpMessage {
 		return new SjpMessage(type, action, id, data);
 	}
 
-	public static SjpMessage createRequest(String action, int id, Object data) {
+	public static  SjpMessage createRequest(String action, int id, Object data) {
 		return new SjpMessage(SjpMessageType.REQUEST, action, id, data);
 	}
 
-	public static SjpMessage createResponse(int id, Object data) {
+	public static  SjpMessage createResponse(int id, Object data) {
 		return new SjpMessage(SjpMessageType.RESPONSE, null, id, data);
 	}
 
-	public static SjpMessage createEvent(String action, Object data) {
+	public static  SjpMessage createEvent(String action, Object data) {
 		return new SjpMessage(SjpMessageType.EVENT, action, null, data);
 	}
 
