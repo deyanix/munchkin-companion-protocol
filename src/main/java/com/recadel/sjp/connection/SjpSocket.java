@@ -11,8 +11,8 @@ import java.util.List;
 public class SjpSocket {
 	private static final int BUFFER_SIZE = 1024;
 	private final Socket socket;
+	private final List<SjpSocketListener> listeners = new ArrayList<>();
 	private SjpMessageBuffer currentMessage;
-	private List<SjpSocketListener> listeners = new ArrayList<>();
 
 	public SjpSocket(Socket socket) {
 		this.socket = socket;

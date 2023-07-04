@@ -8,8 +8,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class SjpMessageBuffer {
-	public static final SjpMessageBuffer END_OF_MESSAGE = new SjpMessageBuffer(new byte[] { 13, 10 }); // "\r\n"
-	private static final Charset CHARSET = StandardCharsets.UTF_8;
+	public static final SjpMessageBuffer END_OF_MESSAGE = new SjpMessageBuffer(new byte[] { '\r', '\n' });
+	public static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	public static SjpMessageBuffer fromString(String text) {
 		return new SjpMessageBuffer(text.getBytes(CHARSET)).append(END_OF_MESSAGE);

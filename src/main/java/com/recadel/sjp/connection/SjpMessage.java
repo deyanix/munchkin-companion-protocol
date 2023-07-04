@@ -16,7 +16,7 @@ public class SjpMessage {
 		}
 		JSONObject json = (JSONObject) object;
 
-		Integer id = null;
+		Long id = null;
 		String action = null;
 		SjpMessageType type;
 		Object data = null;
@@ -29,7 +29,7 @@ public class SjpMessage {
 		}
 
 		if (json.has("id")) {
-			id = json.getInt("id");
+			id = json.getLong("id");
 		}
 		if (json.has("action")) {
 			action = json.getString("action");
@@ -40,24 +40,24 @@ public class SjpMessage {
 		return new SjpMessage(type, action, id, data);
 	}
 
-	public static  SjpMessage createRequest(String action, int id, Object data) {
+	public static SjpMessage createRequest(String action, long id, Object data) {
 		return new SjpMessage(SjpMessageType.REQUEST, action, id, data);
 	}
 
-	public static  SjpMessage createResponse(int id, Object data) {
+	public static SjpMessage createResponse(long id, Object data) {
 		return new SjpMessage(SjpMessageType.RESPONSE, null, id, data);
 	}
 
-	public static  SjpMessage createEvent(String action, Object data) {
+	public static SjpMessage createEvent(String action, Object data) {
 		return new SjpMessage(SjpMessageType.EVENT, action, null, data);
 	}
 
 	private final SjpMessageType type;
 	private final String action;
-	private final Integer id;
+	private final Long id;
 	private final Object data;
 
-	public SjpMessage(SjpMessageType type, String action, Integer id, Object data) {
+	public SjpMessage(SjpMessageType type, String action, Long id, Object data) {
 		this.type = type;
 		this.action = action;
 		this.id = id;
@@ -72,7 +72,7 @@ public class SjpMessage {
 		return action;
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 

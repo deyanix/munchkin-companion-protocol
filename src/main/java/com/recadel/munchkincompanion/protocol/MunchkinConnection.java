@@ -8,19 +8,16 @@ import com.recadel.sjp.connection.SjpSocket;
 import com.recadel.sjp.exception.SjpException;
 
 import java.io.IOException;
-import java.util.Objects;
-import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MunchkinConnection extends SjpAbstractSocketListener {
+	private static final long TIMEOUT = 5000L;
 	private final long id;
 	private final SjpSocket socket;
-	private int nextMessageId = 1;
-	private final BlockingQueue<SjpMessage> messages = new LinkedBlockingQueue<>();
+	private long nextMessageId = 1;
+	private final Map<Long, CompletableFuture<SjpMessage>> futureMap = new ConcurrentHashMap<>();
 
 	public MunchkinConnection(long id, SjpSocket socket) {
 		this.id = id;
@@ -40,27 +37,30 @@ public class MunchkinConnection extends SjpAbstractSocketListener {
 		return socket;
 	}
 
-	public int request(String action, Object data) throws SjpException, IOException {
-		int id = nextMessageId++;
+	public long request(String action, Object data) throws SjpException, IOException {
+		return request(action, nextMessageId++, data);
+	}
+
+	public long request(String action, long id, Object data) throws SjpException, IOException {
 		socket.send(SjpMessage.createRequest(action, id, data).toBuffer());
 		return id;
 	}
 
-	public Future<Object> requestAsync(String action, Object data) throws SjpException, IOException {
-		final int id = request(action, data);
-		return CompletableFuture.supplyAsync(() -> {
+	public CompletableFuture<Object> requestAndWait(String action, Object data) throws SjpException, IOException {
+		long id = nextMessageId++;
+		CompletableFuture<SjpMessage> future = CompletableFuture.supplyAsync(() -> {
 			try {
-				while (true) {
-					SjpMessage message = messages.take();
-					if (Objects.equals(message.getId(), id)) {
-						return message.getData();
-					}
-				}
+				Thread.sleep(TIMEOUT);
+				futureMap.remove(id);
+				throw new RuntimeException("Timeout");
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
-			return null;
 		});
+
+		request(action, id, data);
+		futureMap.put(id, future);
+		return future.thenApply(SjpMessage::getData);
 	}
 
 	public void emit(String action, Object data) throws SjpException, IOException {
@@ -70,15 +70,19 @@ public class MunchkinConnection extends SjpAbstractSocketListener {
 	@Override
 	public void onMessage(SjpMessageBuffer buffer) {
 		SjpMessage message = SjpMessage.fromBuffer(buffer);
-		System.out.printf("Received %s (action: %s, id: %d, data: %s)\r\n", message.getType(), message.getAction(), message.getId(), message.getData());
-		messages.add(message);
 
-		if (message.getType() == SjpMessageType.REQUEST) {
+		if (message.getType() == SjpMessageType.REQUEST && message.getAction().equals("join")) {
 			try {
 				socket.send(SjpMessage.createResponse(message.getId(), "It is my response!").toBuffer());
 			} catch (SjpException | IOException e) {
 				throw new RuntimeException(e);
 			}
+		} else if (message.getType() == SjpMessageType.RESPONSE) {
+			CompletableFuture<SjpMessage> future = futureMap.getOrDefault(message.getId(), null);
+			if (future == null) {
+				throw new RuntimeException("Unknown request");
+			}
+			future.complete(message);
 		}
 	}
 }
