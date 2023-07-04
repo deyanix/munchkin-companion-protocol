@@ -1,8 +1,9 @@
 package com.recadel.sjp.demo;
 
-import com.recadel.sjp.SjpMessage;
-import com.recadel.sjp.SjpSocket;
-import com.recadel.sjp.SjpSocketListener;
+import com.recadel.sjp.connection.SjpMessage;
+import com.recadel.sjp.connection.SjpMessageBuffer;
+import com.recadel.sjp.connection.SjpSocket;
+import com.recadel.sjp.connection.SjpSocketListener;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,8 +20,8 @@ public class ServerMain {
 				SjpSocket sjpSocket = new SjpSocket(socket);
 				sjpSocket.addListener(new SjpSocketListener() {
 					@Override
-					public void onMessage(SjpMessage message) {
-						System.out.println("Message " + message.getText());
+					public void onMessage(SjpMessageBuffer message) {
+						System.out.println("Message " + SjpMessage.fromBuffer(message));
 					}
 
 					@Override

@@ -1,4 +1,4 @@
-package com.recadel.sjp;
+package com.recadel.sjp.exception;
 
 public class SjpException extends Exception {
 	public SjpException() {
