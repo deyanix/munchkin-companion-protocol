@@ -7,16 +7,35 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class SjpSocket {
 	private static final int BUFFER_SIZE = 1024;
 	private final Socket socket;
 	private final List<SjpSocketListener> listeners = new ArrayList<>();
+	private final BlockingQueue<SjpMessageBuffer> buffers = new LinkedBlockingQueue<>();
+	private final ExecutorService executorService;
 	private SjpMessageBuffer currentMessage;
 
-	public SjpSocket(Socket socket) {
+	public SjpSocket(Socket socket, ExecutorService executorService) {
 		this.socket = socket;
 		this.currentMessage = new SjpMessageBuffer();
+		this.executorService = executorService;
+	}
+
+	public SjpSocket(Socket socket) {
+		this(socket, Executors.newCachedThreadPool());
+	}
+
+	public void close() throws IOException {
+		socket.close();
+		executorService.shutdown();
+		buffers.add(new SjpMessageBuffer());
+		listeners.forEach(SjpSocketListener::onClose);
 	}
 
 	public void addListener(SjpSocketListener listener) {
@@ -36,28 +55,42 @@ public class SjpSocket {
 	}
 
 	public void setup() {
-		new Thread(() -> {
+		executorService.submit(() -> {
 			try {
 				InputStream input = socket.getInputStream();
 				byte[] data = new byte[BUFFER_SIZE];
 				int length;
-				while ((length = input.read(data)) != -1) {
-					receiveData(new SjpMessageBuffer(data).slice(0, length - 1));
+				while (!executorService.isShutdown() && (length = input.read(data)) != -1) {
+					buffers.add(new SjpMessageBuffer(data).slice(0, length - 1));
 				}
 			} catch (IOException ex) {
 				listeners.forEach(SjpSocketListener::onError);
 				ex.printStackTrace();
 				try {
-					socket.close();
+					close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-			} finally {
-				if (socket.isClosed()) {
-					listeners.forEach(SjpSocketListener::onClose);
+			}
+		});
+		executorService.submit(() -> {
+			while (!executorService.isShutdown()) {
+				try {
+					SjpMessageBuffer buffer = currentMessage.isEmpty() ?
+								buffers.take() :
+								buffers.poll(5, TimeUnit.SECONDS);
+
+					if (buffer == null) {
+						currentMessage = new SjpMessageBuffer();
+						listeners.forEach(SjpSocketListener::onError);
+						continue;
+					}
+					receiveData(buffer);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
 				}
 			}
-		}).start();
+		});
 	}
 
 	private void receiveData(SjpMessageBuffer message) {

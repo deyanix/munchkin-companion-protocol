@@ -5,15 +5,22 @@ import com.recadel.sjp.connection.SjpSocket;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 
 public class MunchkinClient {
+//	public static void scan(long address,, int port) throws UnknownHostException, SocketException {
+//		long
+//	}
+
 	private final SjpSocket socket;
 	private final MunchkinConnection connection;
 
 	public MunchkinClient(InetAddress address, int port) throws IOException {
-		Socket tcpSocket = new Socket();
-		tcpSocket.connect(new InetSocketAddress(address, port));
+		Socket tcpSocket = new Socket(address, port);
 		socket = new SjpSocket(tcpSocket);
 		connection = new MunchkinConnection(socket);
 		socket.setup();

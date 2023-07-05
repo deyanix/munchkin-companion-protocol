@@ -12,12 +12,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MunchkinServer {
 	private final ServerSocket serverSocket;
 	private final Map<Long, MunchkinConnection> connections = new ConcurrentHashMap<>();
-	private long nextConnectionId = 1;
-	private boolean running = true;
+	private final ExecutorService executorService = Executors.newFixedThreadPool(65);
+	private long nextConnectionId = 1L;
 
 	public MunchkinServer(InetAddress address, int port) throws IOException {
 		serverSocket = new ServerSocket();
@@ -33,16 +35,16 @@ public class MunchkinServer {
 	}
 
 	public void close() throws IOException {
-		running = false;
+		executorService.shutdown();
 		serverSocket.close();
 	}
 
 	public void start() throws IOException {
-		new Thread(() -> {
-			while (running) {
+		executorService.submit(() -> {
+			while (!executorService.isShutdown()) {
 				try {
 					Socket socket = serverSocket.accept();
-					SjpSocket sjpSocket = new SjpSocket(socket);
+					SjpSocket sjpSocket = new SjpSocket(socket, executorService);
 					sjpSocket.setup();
 					long id = nextConnectionId++;
 					MunchkinConnection connection = new MunchkinConnection(id, sjpSocket);
@@ -52,6 +54,6 @@ public class MunchkinServer {
 					ex.printStackTrace();
 				}
 			}
-		}).start();
+		});
 	}
 }
