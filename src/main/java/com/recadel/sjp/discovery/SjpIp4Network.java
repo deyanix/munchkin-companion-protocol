@@ -1,4 +1,4 @@
-package com.recadel.sjp.discover;
+package com.recadel.sjp.discovery;
 
 import java.util.Iterator;
 

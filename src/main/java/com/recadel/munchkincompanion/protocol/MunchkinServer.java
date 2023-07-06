@@ -8,8 +8,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -39,7 +37,7 @@ public class MunchkinServer {
 		serverSocket.close();
 	}
 
-	public void start() throws IOException {
+	public void start() {
 		executorService.submit(() -> {
 			while (!executorService.isShutdown()) {
 				try {

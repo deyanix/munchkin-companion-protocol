@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONTokener;
 
 import java.net.DatagramPacket;
+import java.net.SocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -126,6 +127,14 @@ public class SjpMessageBuffer {
 
 	public String getText() {
 		 return slice(0, -END_OF_MESSAGE.getLength()).toString();
+	}
+
+	public DatagramPacket toDatagramPacket() {
+		return new DatagramPacket(buffer, buffer.length);
+	}
+
+	public DatagramPacket toDatagramPacket(SocketAddress address) {
+		return new DatagramPacket(buffer, buffer.length, address);
 	}
 
 	@Override

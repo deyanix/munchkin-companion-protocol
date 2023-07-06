@@ -1,7 +1,7 @@
 package com.recadel.sjp.demo;
 
-import com.recadel.sjp.discover.SjpIp4Address;
-import com.recadel.sjp.discover.SjpIp4Network;
+import com.recadel.sjp.discovery.SjpIp4Address;
+import com.recadel.sjp.discovery.SjpIp4Network;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

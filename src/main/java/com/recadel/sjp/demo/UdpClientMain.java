@@ -1,31 +1,16 @@
 package com.recadel.sjp.demo;
 
-import com.recadel.sjp.connection.SjpMessage;
+import com.recadel.sjp.discovery.SjpDiscoveryServer;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Arrays;
+import java.net.InetSocketAddress;
 
 public class UdpClientMain {
 	public static void main(String[] args) throws Exception {
-		DatagramSocket socket = new DatagramSocket();
-		InetAddress address = InetAddress.getByName("192.168.16.255");
+		SjpDiscoveryServer server = new SjpDiscoveryServer();
 
-		byte[] buffer = SjpMessage
-				.createRequest("welcome", 0, "look-for-trouble")
-				.toBuffer()
-				.getBuffer();
-
-		int chunkSize = 5;
-		for(int i = 0; i < buffer.length; i += chunkSize){
-			Thread.sleep((int) ((Math.random() + 0.5f) * 1000));
-			byte[] chunk = Arrays.copyOfRange(buffer, i, Math.min(buffer.length, i + chunkSize));
-
-			DatagramPacket packet = new DatagramPacket(chunk, chunk.length, address, 12345);
-			socket.send(packet);
-		}
-		socket.close();
-
+		server.discover(address -> {
+			System.out.println("Found address: " + address);
+		}, new InetSocketAddress("192.168.16.255", 12345), 10, 3000L);
 	}
 }

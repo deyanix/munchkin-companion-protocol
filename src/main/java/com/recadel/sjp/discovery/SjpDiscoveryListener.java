@@ -1,7 +1,7 @@
-package com.recadel.sjp.discover;
+package com.recadel.sjp.discovery;
 
 import java.net.SocketAddress;
 
-public interface SjpDiscoverListener {
+public interface SjpDiscoveryListener {
 	void onDiscover(SocketAddress address);
 }
