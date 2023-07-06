@@ -1,7 +1,6 @@
-package com.recadel.sjp.connection;
+package com.recadel.sjp.discover;
 
 import java.net.Inet4Address;
-import java.net.InetAddress;
 
 public class SjpIp4Address {
 	private final long address;

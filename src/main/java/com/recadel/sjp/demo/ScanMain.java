@@ -1,29 +1,10 @@
 package com.recadel.sjp.demo;
 
-import com.recadel.munchkincompanion.protocol.MunchkinClient;
-import com.recadel.sjp.connection.SjpIp4Address;
-import com.recadel.sjp.connection.SjpIp4Network;
+import com.recadel.sjp.discover.SjpIp4Address;
+import com.recadel.sjp.discover.SjpIp4Network;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class ScanMain {
 	public static void main(String[] args) throws Exception {

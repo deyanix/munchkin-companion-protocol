@@ -19,7 +19,7 @@ public class UdpClientMain {
 
 		int chunkSize = 5;
 		for(int i = 0; i < buffer.length; i += chunkSize){
-			Thread.sleep(1000);
+			Thread.sleep((int) ((Math.random() + 0.5f) * 1000));
 			byte[] chunk = Arrays.copyOfRange(buffer, i, Math.min(buffer.length, i + chunkSize));
 
 			DatagramPacket packet = new DatagramPacket(chunk, chunk.length, address, 12345);

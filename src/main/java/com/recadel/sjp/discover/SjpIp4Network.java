@@ -1,4 +1,4 @@
-package com.recadel.sjp.connection;
+package com.recadel.sjp.discover;
 
 import java.util.Iterator;
 

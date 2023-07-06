@@ -3,6 +3,7 @@ package com.recadel.sjp.connection;
 import org.json.JSONException;
 import org.json.JSONTokener;
 
+import java.net.DatagramPacket;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -13,6 +14,10 @@ public class SjpMessageBuffer {
 
 	public static SjpMessageBuffer fromString(String text) {
 		return new SjpMessageBuffer(text.getBytes(CHARSET)).append(END_OF_MESSAGE);
+	}
+
+	public static SjpMessageBuffer fromDatagramPacket(DatagramPacket packet) {
+		return new SjpMessageBuffer(packet.getData()).slice(0, packet.getLength() - 1);
 	}
 
 	public static SjpMessageBuffer concat(SjpMessageBuffer msg1, SjpMessageBuffer msg2) {

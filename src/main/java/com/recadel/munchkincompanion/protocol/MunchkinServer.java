@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 public class MunchkinServer {
 	private final ServerSocket serverSocket;
 	private final Map<Long, MunchkinConnection> connections = new ConcurrentHashMap<>();
-	private final ExecutorService executorService = Executors.newFixedThreadPool(65);
+	private final ExecutorService executorService = Executors.newFixedThreadPool(64);
 	private long nextConnectionId = 1L;
 
 	public MunchkinServer(InetAddress address, int port) throws IOException {
