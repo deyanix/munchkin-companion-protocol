@@ -12,39 +12,39 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class SjpDiscoveryServer {
+public class SjpDiscovery {
 	private static final SjpMessagePattern WELCOME_REQUEST_PATTERN = new SjpMessagePattern(SjpMessageType.REQUEST, "welcome", "look-for-trouble");
 	private static final SjpMessagePattern WELCOME_RESPONSE_PATTERN = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
 	private final Map<SocketAddress, SjpDiscoveryReceiver> receivers = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(16);
 	private final DatagramSocket socket;
 
-	public SjpDiscoveryServer(SocketAddress address) throws SocketException {
+	public SjpDiscovery(SocketAddress address) throws SocketException {
 		socket = new DatagramSocket(address);
 	}
 
-	public SjpDiscoveryServer(InetAddress address, int port) throws SocketException {
+	public SjpDiscovery(InetAddress address, int port) throws SocketException {
 		this(new InetSocketAddress(address, port));
 	}
 
-	public SjpDiscoveryServer(int port) throws SocketException {
+	public SjpDiscovery(int port) throws SocketException {
 		this(new InetSocketAddress(port));
 	}
 
-	public SjpDiscoveryServer() throws SocketException {
+	public SjpDiscovery() throws SocketException {
 		socket = new DatagramSocket();
 	}
 
@@ -70,13 +70,14 @@ public class SjpDiscoveryServer {
 	public void discover(Consumer<SocketAddress> consumer, SocketAddress broadcastAddress, int poll, long interval) {
 		Random random = new Random();
 		Queue<Long> requestIds = new ConcurrentLinkedQueue<>();
+
 		receive((address, message) -> {
 			if (WELCOME_RESPONSE_PATTERN.match(message) && requestIds.contains(message.getId())) {
 				consumer.accept(address);
 			}
 		});
+
 		executorService.scheduleAtFixedRate(() -> {
-//		executorService.submit(() -> {
 			try {
 				long id = random.nextLong();
 				socket.send(WELCOME_REQUEST_PATTERN.createMessage(id).toBuffer().toDatagramPacket(broadcastAddress));
@@ -86,7 +87,6 @@ public class SjpDiscoveryServer {
 				}
 			} catch (IOException ignored) {
 			}
-//		});
 		}, 0, interval, TimeUnit.MILLISECONDS);
 	}
 
@@ -102,6 +102,15 @@ public class SjpDiscoveryServer {
 				}
 			}
 		});
+
+		executorService.scheduleAtFixedRate(() -> receivers.entrySet()
+				.parallelStream()
+				.filter(entry ->
+						entry.getValue().getLastReceivedBuffer().until(
+								LocalDateTime.now(),
+								ChronoUnit.MILLIS) > 5000L)
+				.map(Map.Entry::getKey)
+				.forEach(receivers::remove), 0, 1000L, TimeUnit.MILLISECONDS);
 	}
 
 	private void handlePacket(DatagramPacket packet, BiConsumer<SocketAddress, SjpMessage> consumer) {
