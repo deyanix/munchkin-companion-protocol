@@ -7,10 +7,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 public class MunchkinClient {
-//	public static void scan(long address,, int port) throws UnknownHostException, SocketException {
-//		long
-//	}
-
 	private final SjpSocket socket;
 	private final MunchkinConnection connection;
 
