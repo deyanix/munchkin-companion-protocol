@@ -1,6 +1,7 @@
 package com.recadel.sjp.discovery;
 
 import com.recadel.sjp.connection.SjpMessage;
+import com.recadel.sjp.connection.SjpMessageBuffer;
 import com.recadel.sjp.connection.SjpMessagePattern;
 import com.recadel.sjp.connection.SjpMessageType;
 
@@ -12,11 +13,12 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +28,7 @@ import java.util.function.Consumer;
 public class SjpDiscoveryServer {
 	private static final SjpMessagePattern WELCOME_REQUEST_PATTERN = new SjpMessagePattern(SjpMessageType.REQUEST, "welcome", "look-for-trouble");
 	private static final SjpMessagePattern WELCOME_RESPONSE_PATTERN = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
-	private final List<SjpDiscoveryConnection> connections = new CopyOnWriteArrayList<>();
+	private final Map<SocketAddress, SjpDiscoveryReceiver> receivers = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(16);
 	private final DatagramSocket socket;
 
@@ -73,8 +75,8 @@ public class SjpDiscoveryServer {
 				consumer.accept(address);
 			}
 		});
-//		executorService.scheduleAtFixedRate(() -> {
-		executorService.submit(() -> {
+		executorService.scheduleAtFixedRate(() -> {
+//		executorService.submit(() -> {
 			try {
 				long id = random.nextLong();
 				socket.send(WELCOME_REQUEST_PATTERN.createMessage(id).toBuffer().toDatagramPacket(broadcastAddress));
@@ -84,8 +86,8 @@ public class SjpDiscoveryServer {
 				}
 			} catch (IOException ignored) {
 			}
-		});
-//		}, 0, interval, TimeUnit.MILLISECONDS);
+//		});
+		}, 0, interval, TimeUnit.MILLISECONDS);
 	}
 
 	private void receive(BiConsumer<SocketAddress, SjpMessage> consumer) {
@@ -103,16 +105,16 @@ public class SjpDiscoveryServer {
 	}
 
 	private void handlePacket(DatagramPacket packet, BiConsumer<SocketAddress, SjpMessage> consumer) {
-		boolean found = connections.stream().anyMatch(conn -> conn.handlePacket(packet));
-		if (!found) {
-			SjpDiscoveryConnection connection = new SjpDiscoveryConnection(socket, packet.getSocketAddress(), executorService);
-			connection.handlePacket(packet);
-			connection.receive()
-					.thenAccept((buffer) ->
-							buffer.ifPresent(b ->
-									consumer.accept(packet.getSocketAddress(), SjpMessage.fromBuffer(b))))
-					.whenComplete((unused, throwable) -> connections.remove(connection));
-			connections.add(connection);
+		SocketAddress address = packet.getSocketAddress();
+		SjpDiscoveryReceiver receiver;
+		if (!receivers.containsKey(address)) {
+			receiver = new SjpDiscoveryReceiver();
+			receivers.put(address, receiver);
+		} else {
+			receiver = receivers.get(address);
 		}
+
+		receiver.receive(SjpMessageBuffer.fromDatagramPacket(packet))
+				.ifPresent(buffer -> consumer.accept(address, SjpMessage.fromBuffer(buffer)));
 	}
 }
