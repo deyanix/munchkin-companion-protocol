@@ -4,12 +4,7 @@ import com.recadel.sjp.connection.SjpSocket;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Enumeration;
 
 public class MunchkinClient {
 //	public static void scan(long address,, int port) throws UnknownHostException, SocketException {
