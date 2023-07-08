@@ -1,10 +1,10 @@
-package com.recadel.sjp.demo;
+package com.recadel.munchkincompanion.protocol;
 
-import com.recadel.munchkincompanion.protocol.MunchkinClient;
+import com.recadel.sjp.connection.SjpClient;
 
 public class ClientMain {
 	public static void main(String[] args) throws Exception {
-		MunchkinClient client = new MunchkinClient("127.0.0.1", 1234);
+		SjpClient client = new SjpClient("127.0.0.1", 1234);
 		System.out.println("Client started.");
 
 		client.getConnection()

@@ -6,6 +6,7 @@ import com.recadel.sjp.common.SjpMessagePattern;
 import com.recadel.sjp.common.SjpMessageType;
 import com.recadel.sjp.common.SjpReceiver;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -20,21 +21,23 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 
-public abstract class SjpDiscoveryConnection {
+public abstract class SjpDiscoveryConnection implements Closeable {
 	protected static final SjpMessagePattern WELCOME_REQUEST_PATTERN = new SjpMessagePattern(SjpMessageType.REQUEST, "welcome", "look-for-trouble");
 	protected static final SjpMessagePattern WELCOME_RESPONSE_PATTERN = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
-	protected final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
+	protected final ScheduledExecutorService executorService;
 	protected final DatagramSocket socket;
 	private final Map<SocketAddress, SjpReceiver> receivers = new ConcurrentHashMap<>();
 	private int datagramLength = 1024;
 	private long receiverLifetime = 5000L;
 
-	protected SjpDiscoveryConnection(SocketAddress address) throws SocketException {
-		socket = new DatagramSocket(address);
+	protected SjpDiscoveryConnection(ScheduledExecutorService executorService, SocketAddress address) throws SocketException {
+		this.socket = new DatagramSocket(address);
+		this.executorService = executorService;
 	}
 
-	protected SjpDiscoveryConnection() throws SocketException {
-		socket = new DatagramSocket();
+	protected SjpDiscoveryConnection(ScheduledExecutorService executorService) throws SocketException {
+		this.socket = new DatagramSocket();
+		this.executorService = executorService;
 	}
 
 	public int getDatagramLength() {
@@ -55,7 +58,6 @@ public abstract class SjpDiscoveryConnection {
 
 	public void close() {
 		socket.close();
-		executorService.shutdown();
 	}
 
 	protected void receive(BiConsumer<SocketAddress, SjpMessage> consumer) {

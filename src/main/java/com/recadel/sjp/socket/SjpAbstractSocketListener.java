@@ -1,4 +1,4 @@
-package com.recadel.sjp.connection;
+package com.recadel.sjp.socket;
 
 import com.recadel.sjp.common.SjpMessageBuffer;
 

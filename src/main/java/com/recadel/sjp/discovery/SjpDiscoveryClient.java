@@ -6,12 +6,13 @@ import java.net.SocketException;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class SjpDiscoveryClient extends SjpDiscoveryConnection {
-	public SjpDiscoveryClient() throws SocketException {
-		super();
+	public SjpDiscoveryClient(ScheduledExecutorService executorService) throws SocketException {
+		super(executorService);
 	}
 
 	public void discover(Consumer<SocketAddress> consumer, SocketAddress broadcastAddress, int poll, long interval) {

@@ -4,14 +4,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpDiscoveryServer extends SjpDiscoveryConnection {
-	public SjpDiscoveryServer(InetAddress address, int port) throws SocketException {
-		super(new InetSocketAddress(address, port));
+	public SjpDiscoveryServer(ScheduledExecutorService executorService, InetAddress address, int port) throws SocketException {
+		super(executorService, new InetSocketAddress(address, port));
 	}
 
-	public SjpDiscoveryServer(int port) throws SocketException {
-		super(new InetSocketAddress(port));
+	public SjpDiscoveryServer(ScheduledExecutorService executorService, int port) throws SocketException {
+		super(executorService, new InetSocketAddress(port));
 	}
 
 	public void start() {
