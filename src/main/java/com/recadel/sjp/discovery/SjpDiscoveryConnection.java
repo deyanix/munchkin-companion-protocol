@@ -1,9 +1,10 @@
 package com.recadel.sjp.discovery;
 
-import com.recadel.sjp.connection.SjpMessage;
-import com.recadel.sjp.connection.SjpMessageBuffer;
-import com.recadel.sjp.connection.SjpMessagePattern;
-import com.recadel.sjp.connection.SjpMessageType;
+import com.recadel.sjp.common.SjpMessage;
+import com.recadel.sjp.common.SjpMessageBuffer;
+import com.recadel.sjp.common.SjpMessagePattern;
+import com.recadel.sjp.common.SjpMessageType;
+import com.recadel.sjp.common.SjpReceiver;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -24,7 +25,7 @@ public abstract class SjpDiscoveryConnection {
 	protected static final SjpMessagePattern WELCOME_RESPONSE_PATTERN = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
 	protected final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
 	protected final DatagramSocket socket;
-	private final Map<SocketAddress, SjpDiscoveryReceiver> receivers = new ConcurrentHashMap<>();
+	private final Map<SocketAddress, SjpReceiver> receivers = new ConcurrentHashMap<>();
 	private int datagramLength = 1024;
 	private long receiverLifetime = 5000L;
 
@@ -82,15 +83,15 @@ public abstract class SjpDiscoveryConnection {
 
 	private void handlePacket(DatagramPacket packet, BiConsumer<SocketAddress, SjpMessage> consumer) {
 		SocketAddress address = packet.getSocketAddress();
-		SjpDiscoveryReceiver receiver;
+		SjpReceiver receiver;
 		if (!receivers.containsKey(address)) {
-			receiver = new SjpDiscoveryReceiver();
+			receiver = new SjpReceiver();
 			receivers.put(address, receiver);
 		} else {
 			receiver = receivers.get(address);
 		}
 
-		receiver.receive(SjpMessageBuffer.fromDatagramPacket(packet))
-				.ifPresent(buffer -> consumer.accept(address, SjpMessage.fromBuffer(buffer)));
+		receiver.receiveAll(SjpMessageBuffer.fromDatagramPacket(packet))
+				.forEach(buffer -> consumer.accept(address, SjpMessage.fromBuffer(buffer)));
 	}
 }

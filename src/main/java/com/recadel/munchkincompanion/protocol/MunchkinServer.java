@@ -10,13 +10,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class MunchkinServer {
 	private final ServerSocket serverSocket;
 	private final Map<Long, MunchkinConnection> connections = new ConcurrentHashMap<>();
-	private final ExecutorService executorService = Executors.newFixedThreadPool(64);
+	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(64);
 	private long nextConnectionId = 1L;
 
 	public MunchkinServer(InetAddress address, int port) throws IOException {

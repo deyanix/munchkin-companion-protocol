@@ -1,9 +1,9 @@
 package com.recadel.munchkincompanion.protocol;
 
+import com.recadel.sjp.common.SjpMessage;
+import com.recadel.sjp.common.SjpMessageBuffer;
+import com.recadel.sjp.common.SjpMessageType;
 import com.recadel.sjp.connection.SjpAbstractSocketListener;
-import com.recadel.sjp.connection.SjpMessage;
-import com.recadel.sjp.connection.SjpMessageBuffer;
-import com.recadel.sjp.connection.SjpMessageType;
 import com.recadel.sjp.connection.SjpSocket;
 import com.recadel.sjp.exception.SjpException;
 

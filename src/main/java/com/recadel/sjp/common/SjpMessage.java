@@ -1,4 +1,4 @@
-package com.recadel.sjp.connection;
+package com.recadel.sjp.common;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;

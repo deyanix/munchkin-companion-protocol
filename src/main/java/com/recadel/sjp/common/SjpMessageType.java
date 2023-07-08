@@ -1,7 +1,7 @@
-package com.recadel.sjp.connection;
+package com.recadel.sjp.common;
 
 public enum SjpMessageType {
 	REQUEST,
 	RESPONSE,
-	EVENT;
+	EVENT,
 }

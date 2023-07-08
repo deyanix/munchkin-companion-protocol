@@ -1,4 +1,4 @@
-package com.recadel.sjp.connection;
+package com.recadel.sjp.common;
 
 import org.json.JSONException;
 import org.json.JSONTokener;

@@ -1,4 +1,4 @@
-package com.recadel.sjp.connection;
+package com.recadel.sjp.common;
 
 import java.util.Objects;
 
