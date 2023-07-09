@@ -1,6 +1,6 @@
 package com.recadel.sjp.exception;
 
-public class SjpException extends Exception {
+public class SjpException extends RuntimeException {
 	public SjpException() {
 	}
 

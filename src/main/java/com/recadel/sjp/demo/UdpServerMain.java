@@ -1,12 +1,10 @@
 package com.recadel.sjp.demo;
 
-import com.recadel.sjp.discovery.SjpDiscoveryServer;
-
-import java.util.concurrent.Executors;
+import com.recadel.sjp.reactnative.SjpDiscoveryManager;
 
 public class UdpServerMain {
 	public static void main(String[] args) throws Exception {
-		SjpDiscoveryServer server = new SjpDiscoveryServer(Executors.newSingleThreadScheduledExecutor(),12345);
-		server.start();
+		SjpDiscoveryManager manager = new SjpDiscoveryManager();
+		manager.createServer(1, 1923);
 	}
 }

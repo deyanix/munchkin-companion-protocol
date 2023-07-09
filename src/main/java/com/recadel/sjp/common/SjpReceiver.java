@@ -22,6 +22,7 @@ public class SjpReceiver {
 			}
 
 			receive(buffer.slice(offset, endIndex)).ifPresent(messages::add);
+			offset = endIndex;
 		}
 		return messages;
 	}

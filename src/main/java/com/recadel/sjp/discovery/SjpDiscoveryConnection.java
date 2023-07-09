@@ -7,7 +7,6 @@ import com.recadel.sjp.common.SjpMessageType;
 import com.recadel.sjp.common.SjpReceiver;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
@@ -16,7 +15,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -30,13 +28,8 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 	private int datagramLength = 1024;
 	private long receiverLifetime = 5000L;
 
-	protected SjpDiscoveryConnection(ScheduledExecutorService executorService, SocketAddress address) throws SocketException {
-		this.socket = new DatagramSocket(address);
-		this.executorService = executorService;
-	}
-
-	protected SjpDiscoveryConnection(ScheduledExecutorService executorService) throws SocketException {
-		this.socket = new DatagramSocket();
+	protected SjpDiscoveryConnection(ScheduledExecutorService executorService, DatagramSocket socket) throws SocketException {
+		this.socket = socket;
 		this.executorService = executorService;
 	}
 
@@ -64,11 +57,14 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 		executorService.submit(() -> {
 			byte[] buffer = new byte[datagramLength];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-			while (!executorService.isShutdown()) {
+			while (!socket.isClosed() && !executorService.isShutdown()) {
 				try {
+					System.out.println("[CONNECTION] Waiting for buffer");
 					socket.receive(packet);
+					System.out.println("[CONNECTION] Received buffer");
 					handlePacket(packet, consumer);
-				} catch (IOException ignored) {
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		});
