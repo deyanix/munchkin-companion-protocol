@@ -6,6 +6,8 @@ import com.recadel.sjp.common.SjpMessagePattern;
 import com.recadel.sjp.common.SjpMessageType;
 import com.recadel.sjp.common.SjpReceiver;
 
+import org.json.JSONException;
+
 import java.io.Closeable;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -22,15 +24,13 @@ import java.util.function.BiConsumer;
 public abstract class SjpDiscoveryConnection implements Closeable {
 	protected static final SjpMessagePattern WELCOME_REQUEST_PATTERN = new SjpMessagePattern(SjpMessageType.REQUEST, "welcome", "look-for-trouble");
 	protected static final SjpMessagePattern WELCOME_RESPONSE_PATTERN = new SjpMessagePattern(SjpMessageType.RESPONSE, "welcome", "wandering-monster");
-	protected final ScheduledExecutorService executorService;
 	protected final DatagramSocket socket;
 	private final Map<SocketAddress, SjpReceiver> receivers = new ConcurrentHashMap<>();
 	private int datagramLength = 1024;
 	private long receiverLifetime = 5000L;
 
-	protected SjpDiscoveryConnection(ScheduledExecutorService executorService, DatagramSocket socket) throws SocketException {
+	protected SjpDiscoveryConnection(DatagramSocket socket) throws SocketException {
 		this.socket = socket;
-		this.executorService = executorService;
 	}
 
 	public int getDatagramLength() {
@@ -53,15 +53,13 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 		socket.close();
 	}
 
-	protected void receive(BiConsumer<SocketAddress, SjpMessage> consumer) {
+	protected void receive(BiConsumer<SocketAddress, SjpMessage> consumer, ScheduledExecutorService executorService) {
 		executorService.submit(() -> {
 			byte[] buffer = new byte[datagramLength];
 			DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 			while (!socket.isClosed() && !executorService.isShutdown()) {
 				try {
-					System.out.println("[CONNECTION] Waiting for buffer");
 					socket.receive(packet);
-					System.out.println("[CONNECTION] Received buffer");
 					handlePacket(packet, consumer);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -81,15 +79,18 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 
 	private void handlePacket(DatagramPacket packet, BiConsumer<SocketAddress, SjpMessage> consumer) {
 		SocketAddress address = packet.getSocketAddress();
-		SjpReceiver receiver;
-		if (!receivers.containsKey(address)) {
+		SjpReceiver receiver = receivers.getOrDefault(address, null);
+		if (receiver == null) {
 			receiver = new SjpReceiver();
 			receivers.put(address, receiver);
-		} else {
-			receiver = receivers.get(address);
 		}
 
 		receiver.receiveAll(SjpMessageBuffer.fromDatagramPacket(packet))
-				.forEach(buffer -> consumer.accept(address, SjpMessage.fromBuffer(buffer)));
+				.forEach(buffer -> {
+					try {
+						consumer.accept(address, SjpMessage.fromBuffer(buffer));
+					} catch (JSONException ignored) {
+					}
+				});
 	}
 }

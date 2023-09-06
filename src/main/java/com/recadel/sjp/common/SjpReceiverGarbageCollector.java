@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class SjpReceiverGarbageCollector {
 	private final List<SjpReceiver> receivers = new CopyOnWriteArrayList<>();
 	private final ScheduledExecutorService executorService;
 	private long receiverLifetime = 5000L;
+	private ScheduledFuture<?> future;
 
 	public SjpReceiverGarbageCollector(ScheduledExecutorService executorService) {
 		this.executorService = executorService;
@@ -38,7 +40,11 @@ public class SjpReceiverGarbageCollector {
 	}
 
 	public void start() {
-		executorService.scheduleAtFixedRate(() -> {
+		if (future == null || !future.isCancelled()) {
+			return;
+		}
+
+		future = executorService.scheduleAtFixedRate(() -> {
 			receivers.parallelStream()
 					.filter(receiver ->
 							receiver.getLastReceivedBuffer().until(
@@ -49,6 +55,7 @@ public class SjpReceiverGarbageCollector {
 	}
 
 	public void stop() {
-		executorService.shutdown();
+		future.cancel(false);
+		future = null;
 	}
 }

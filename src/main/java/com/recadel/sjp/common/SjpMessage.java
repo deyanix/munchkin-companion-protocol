@@ -1,10 +1,11 @@
 package com.recadel.sjp.common;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 public class SjpMessage {
-	public static SjpMessage fromBuffer(SjpMessageBuffer buffer) {
+	public static SjpMessage fromBuffer(SjpMessageBuffer buffer) throws JSONException {
 		JSONTokener tokener = new JSONTokener(buffer.getText());
 		if (!tokener.more()) {
 			throw new IllegalArgumentException("Bad message buffer format: Invalid JSON");
@@ -80,7 +81,7 @@ public class SjpMessage {
 		return data;
 	}
 
-	public JSONObject toJSON() {
+	public JSONObject toJSON() throws JSONException {
 		return new JSONObject()
 			.put("type", type.toString().toLowerCase())
 			.put("action", action)
@@ -88,7 +89,7 @@ public class SjpMessage {
 			.put("data", data);
 	}
 
-	public SjpMessageBuffer toBuffer() {
+	public SjpMessageBuffer toBuffer() throws JSONException {
 		return SjpMessageBuffer.fromString(toJSON().toString());
 	}
 }

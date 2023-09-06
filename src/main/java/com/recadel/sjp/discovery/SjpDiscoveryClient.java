@@ -1,7 +1,10 @@
 package com.recadel.sjp.discovery;
 
+import org.json.JSONException;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Queue;
@@ -13,36 +16,38 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class SjpDiscoveryClient extends SjpDiscoveryConnection {
+	private final SocketAddress broadcastAddress;
 	private int identifiersPool = 10;
 	private long interval = 5000L;
 	private ScheduledFuture<?> senderFuture;
 
-	public SjpDiscoveryClient(ScheduledExecutorService executorService) throws SocketException {
-		super(executorService, new DatagramSocket());
+	public SjpDiscoveryClient(SocketAddress broadcastAddress) throws SocketException {
+		super(new DatagramSocket());
+		this.broadcastAddress = broadcastAddress;
 	}
 
-	public void discover(Consumer<SocketAddress> consumer, SocketAddress broadcastAddress) {
+	public void discover(Consumer<InetSocketAddress> consumer, ScheduledExecutorService executorService) {
 		final int localIdentifiersPool = identifiersPool;
 		Random random = new Random();
 		Queue<Long> requestIds = new ConcurrentLinkedQueue<>();
 
-		System.out.println("[CLIENT] Started");
 		receive((address, message) -> {
-			if (WELCOME_RESPONSE_PATTERN.match(message) && requestIds.contains(message.getId())) {
-				consumer.accept(address);
+			if (address instanceof InetSocketAddress &&
+					WELCOME_RESPONSE_PATTERN.match(message) &&
+					requestIds.contains(message.getId())) {
+				consumer.accept((InetSocketAddress) address);
 			}
-		});
+		}, executorService);
 
 		senderFuture = executorService.scheduleAtFixedRate(() -> {
 			try {
-				System.out.println("[CLIENT] Sent message");
 				long id = random.nextLong();
 				socket.send(WELCOME_REQUEST_PATTERN.createMessage(id).toBuffer().toDatagramPacket(broadcastAddress));
 				requestIds.add(id);
 				if (requestIds.size() > localIdentifiersPool) {
 					requestIds.poll();
 				}
-			} catch (IOException ignored) {
+			} catch (IOException | JSONException ignored) {
 			}
 		}, 0, interval, TimeUnit.MILLISECONDS);
 	}
