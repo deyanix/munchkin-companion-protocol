@@ -29,7 +29,7 @@ public abstract class SjpDiscoveryConnection implements Closeable {
 	private int datagramLength = 1024;
 	private long receiverLifetime = 5000L;
 
-	protected SjpDiscoveryConnection(DatagramSocket socket) throws SocketException {
+	protected SjpDiscoveryConnection(DatagramSocket socket) {
 		this.socket = socket;
 	}
 

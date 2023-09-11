@@ -1,9 +1,11 @@
 package com.munchkincompanion;
 
+import com.munchkincompanion.game.controller.HostGameController;
+import com.munchkincompanion.game.entity.PlayerData;
+import com.munchkincompanion.game.entity.PlayerGender;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.messenger.SjpMessenger;
-import com.recadel.sjp.messenger.SjpMessengerReceiver;
-import com.recadel.sjp.messenger.SjpServerMessenger;
+import com.recadel.sjp.messenger.SjpServerMediator;
 import com.recadel.sjp.messenger.SjpServerMessengerListener;
 
 import java.net.ServerSocket;
@@ -15,36 +17,27 @@ public class MainHost {
 	private final static SjpReceiverGarbageCollector garbageCollector = new SjpReceiverGarbageCollector(executorService);
 	public static void main(String[] args) throws Exception {
 		ServerSocket socket = new ServerSocket(1234);
+		SjpServerMediator mediator = new SjpServerMediator(socket);
+		mediator.setGarbageCollector(garbageCollector);
+		mediator.start(executorService);
+		HostGameController gameController = new HostGameController(mediator);
+		gameController.addUpdateListener(System.out::println);
 
-		SjpServerMessenger messenger = new SjpServerMessenger(socket);
-		messenger.start(executorService);
-		messenger.addListener(new SjpServerMessengerListener() {
-			@Override
-			public void onConnect(SjpMessenger messenger) {
-				System.out.println("[HOST] Connect");
-				messenger.emit("cool", "data");
-				messenger.addReceiver(new SjpMessengerReceiver() {
-					@Override
-					public void onEvent(String action, Object data) {
-						System.out.println("[HOST] Event " + action + " : " + data);
-					}
+		PlayerData data1 = new PlayerData();
+		data1.setName("Krzysztof Fryta");
+		data1.setLevel(4);
+		data1.setGear(2);
+		data1.setGender(PlayerGender.FEMALE);
+		data1.setGenderChanged(true);
+		gameController.createPlayer(data1);
 
-					@Override
-					public void onRequest(String action, Object data) {
-						System.out.println("[HOST] Request " + action + " : " + data);
-					}
-				});
-			}
+		PlayerData data2 = new PlayerData();
+		data2.setName("Andrzej Chmiel");
+		data2.setLevel(5);
+		data2.setGear(1);
+		data2.setGender(PlayerGender.MALE);
+		data2.setGenderChanged(false);
+		gameController.createPlayer(data2);
 
-			@Override
-			public void onClose() {
-				System.out.println("[HOST] Close");
-			}
-
-			@Override
-			public void onError(Throwable throwable) {
-				System.out.println("[HOST] Error");
-			}
-		});
 	}
 }

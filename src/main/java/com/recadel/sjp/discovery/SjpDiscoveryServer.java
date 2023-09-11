@@ -14,7 +14,7 @@ public class SjpDiscoveryServer extends SjpDiscoveryConnection {
 		super(new DatagramSocket(address));
 	}
 
-	public SjpDiscoveryServer(int port) throws SocketException, UnknownHostException {
+	public SjpDiscoveryServer(int port) throws SocketException {
 		super(new DatagramSocket(port));
 	}
 

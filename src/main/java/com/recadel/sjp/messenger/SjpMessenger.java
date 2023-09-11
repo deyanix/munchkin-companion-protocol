@@ -37,6 +37,10 @@ public class SjpMessenger  {
         }
     }
 
+    public void emit(String action) {
+        emit(action, null);
+    }
+
     public void request(String action, Object data) {
         try {
             socket.send(SjpMessage.createRequest(action, nextRequestId++, data).toBuffer());
@@ -58,19 +62,15 @@ public class SjpMessenger  {
         @Override
         public void onMessage(SjpMessageBuffer buffer) {
             try {
+                System.out.println("[MESSENGER] Received data " + buffer.toString());
                 SjpMessage message = SjpMessage.fromBuffer(buffer);
                 String action = message.getAction();
                 Object data = message.getData();
-                switch (message.getType()) {
-                    case EVENT:
-                        receivers.forEach(receiver -> receiver.onEvent(action, data));
-                        break;
-                    case REQUEST:
-                        receivers.forEach(receiver -> receiver.onRequest(action, data));
-                        break;
-                    case RESPONSE:
-                        // TODO: Implement it!
-                }
+				switch (message.getType()) {
+					case EVENT -> receivers.forEach(receiver -> receiver.onEvent(action, data));
+					case REQUEST -> receivers.forEach(receiver -> receiver.onRequest(action, data));
+                    // TODO: Implement RESPONSE
+				}
             } catch (JSONException e) {
                 throw new SjpException(e);
             }
@@ -78,6 +78,7 @@ public class SjpMessenger  {
 
         @Override
         public void onError(Throwable ex) {
+            ex.printStackTrace();
         }
 
         @Override

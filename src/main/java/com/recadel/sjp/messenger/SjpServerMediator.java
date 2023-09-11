@@ -10,14 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class SjpServerMessenger {
+public class SjpServerMediator {
     private final ServerSocket serverSocket;
     private final List<SjpMessenger> messengers = new ArrayList<>();
     private final List<SjpServerMessengerListener> listeners = new ArrayList<>();
     private SjpReceiverGarbageCollector garbageCollector;
     private long nextMessengerId = 0;
 
-    public SjpServerMessenger(ServerSocket serverSocket) {
+    public SjpServerMediator(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
 
@@ -39,9 +39,11 @@ public class SjpServerMessenger {
                     listeners.forEach(listener -> listener.onConnect(messenger));
                 } catch (IOException ex) {
                     listeners.forEach(listener -> listener.onError(ex));
+                    ex.printStackTrace();
                 }
             }
             listeners.forEach(SjpServerMessengerListener::onClose);
+            // TODO: Remove disconnected sockets
         });
     }
 
@@ -49,7 +51,7 @@ public class SjpServerMessenger {
         messengers.forEach(messenger -> messenger.emit(action, data));
     }
 
-    public void broadcastExcept(String action, Object data, int exceptMessengerId) {
+    public void broadcastExcept(String action, Object data, long exceptMessengerId) {
         messengers.stream()
                 .filter(messenger -> messenger.getId() != exceptMessengerId)
                 .forEach(messenger -> messenger.emit(action, data));

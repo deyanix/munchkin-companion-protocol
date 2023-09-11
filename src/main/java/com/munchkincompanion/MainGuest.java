@@ -1,5 +1,8 @@
 package com.munchkincompanion;
 
+import com.munchkincompanion.game.controller.GuestGameController;
+import com.munchkincompanion.game.entity.PlayerData;
+import com.munchkincompanion.game.entity.PlayerGender;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.messenger.SjpMessenger;
 import com.recadel.sjp.messenger.SjpMessengerReceiver;
@@ -22,18 +25,16 @@ public class MainGuest {
 		socket.setup(executorService);
 
 		SjpMessenger messenger = new SjpMessenger(socket);
-		messenger.addReceiver(new SjpMessengerReceiver() {
-			@Override
-			public void onEvent(String action, Object data) {
-				System.out.println("[GUEST] Event " + action + " : " + data);
-			}
+		GuestGameController gameController = new GuestGameController(messenger);
+		gameController.addUpdateListener(System.out::println);
+		gameController.synchronizePlayers();
 
-			@Override
-			public void onRequest(String action, Object data) {
-				System.out.println("[GUEST] Event " + action + " : " + data);
-			}
-		});
-
-		messenger.emit("test", "Test");
+		PlayerData data1 = new PlayerData();
+		data1.setName("Michał Janiak");
+		data1.setLevel(5);
+		data1.setGear(6);
+		data1.setGender(PlayerGender.MALE);
+		data1.setGenderChanged(false);
+		gameController.createPlayer(data1);
 	}
 }

@@ -1,0 +1,81 @@
+package com.munchkincompanion.game.controller;
+
+import com.munchkincompanion.game.entity.Player;
+import com.munchkincompanion.game.entity.PlayerData;
+import com.recadel.sjp.messenger.SjpMessenger;
+import com.recadel.sjp.messenger.SjpMessengerReceiver;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.List;
+import java.util.stream.IntStream;
+
+public class GuestGameController extends GameController {
+	private final SjpMessenger messenger;
+
+	public GuestGameController(SjpMessenger messenger) {
+		this.messenger = messenger;
+		messenger.addReceiver(new GuestGameReceiver());
+	}
+
+	public void synchronizePlayers() {
+		messenger.emit("players/get");
+	}
+
+	@Override
+	public void createPlayer(PlayerData data) {
+		messenger.emit("players/create", data.toJSON());
+	}
+
+	@Override
+	public void updatePlayer(Player player) {
+		messenger.emit("players/update", player.toJSON());
+	}
+
+	@Override
+	public void deletePlayer(int playerId) {
+		messenger.emit("players/delete", playerId);
+	}
+
+	class GuestGameReceiver implements SjpMessengerReceiver {
+		@Override
+		public void onEvent(String action, Object data) {
+			switch (action) {
+				case "players/create" -> {
+					if (!(data instanceof JSONObject player)) {
+						throw new RuntimeException("...");
+					}
+					appendLocallyPlayer(Player.fromJSON(player));
+				}
+				case "players/update" -> {
+					if (!(data instanceof JSONObject player)) {
+						throw new RuntimeException("...");
+					}
+					updateLocallyPlayer(Player.fromJSON(player));
+				}
+				case "players/delete" -> {
+					if (!(data instanceof Integer playerId)) {
+						throw new RuntimeException("...");
+					}
+					deleteLocallyPlayer(playerId);
+				}
+				case "players/synchronize" -> {
+					if (!(data instanceof JSONArray array)) {
+						throw new RuntimeException("...");
+					}
+
+					List<Player> players = IntStream.range(0, array.length())
+							.mapToObj(array::getJSONObject)
+							.map(Player::fromJSON)
+							.toList();
+					replacePlayers(players);
+				}
+			}
+		}
+
+		@Override
+		public void onRequest(String action, Object data) {
+
+		}
+	}
+}

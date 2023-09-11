@@ -37,4 +37,15 @@ public class Player extends PlayerData {
         object.put("id", id);
         return object;
     }
+
+    @Override
+    public String toString() {
+		return "Player{" + "id=" + id + ',' +
+                "name=" + getName() + ',' +
+                "level=" + getLevel() + ',' +
+                "gear=" + getGear() + ',' +
+                "gender=" + getGender() + ',' +
+                "genderChanged=" + isGenderChanged() +
+                '}';
+    }
 }

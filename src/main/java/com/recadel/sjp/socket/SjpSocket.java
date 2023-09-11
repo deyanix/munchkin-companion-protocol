@@ -53,10 +53,11 @@ public class SjpSocket {
 			throw new SjpException("Cannot send a invalid message");
 		}
 		try {
-			System.out.println("[NATIVE] Sending");
+			System.out.println("[NATIVE] Sending " + message.toString());
 			socket.getOutputStream().write(message.getBuffer());
 			socket.getOutputStream().flush();
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			handleException(ex);
 			tryClose();
 		}
@@ -75,6 +76,7 @@ public class SjpSocket {
 					receiveData(new SjpMessageBuffer(data).slice(0, length - 1));
 				}
 			} catch (IOException ex) {
+				ex.printStackTrace();
 				handleException(ex);
 				tryClose();
 			}
@@ -82,6 +84,7 @@ public class SjpSocket {
 	}
 
 	private void receiveData(SjpMessageBuffer buffer) {
+		System.out.println("[NATIVE] Receiving data");
 		receiver.receiveAll(buffer)
 				.forEach(message ->
 						listeners.forEach(listener -> listener.onMessage(message)));
@@ -96,6 +99,7 @@ public class SjpSocket {
 		try {
 			close();
 		} catch (IOException ex) {
+			ex.printStackTrace();
 			handleException(ex);
 		}
 	}
@@ -110,6 +114,5 @@ public class SjpSocket {
 
 	private void handleException(Exception ex) {
 		listeners.forEach(listener -> listener.onError(ex));
-		ex.printStackTrace();
 	}
 }

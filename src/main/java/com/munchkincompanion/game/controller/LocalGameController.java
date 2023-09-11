@@ -7,8 +7,8 @@ public class LocalGameController extends GameController {
     private int nextPlayerId = 1;
 
     @Override
-    public void createPlayer(PlayerData player) {
-        createLocallyPlayer(new Player(nextPlayerId++, player));
+    public void createPlayer(PlayerData data) {
+        createLocallyPlayer(data);
     }
 
     @Override
@@ -19,5 +19,11 @@ public class LocalGameController extends GameController {
     @Override
     public void deletePlayer(int playerId) {
         deleteLocallyPlayer(playerId);
+    }
+
+    protected Player createLocallyPlayer(PlayerData data) {
+        Player player = new Player(nextPlayerId++, data);
+        appendLocallyPlayer(player);
+        return player;
     }
 }
