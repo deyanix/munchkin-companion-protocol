@@ -35,15 +35,14 @@ public class SjpServerMediator {
                     sjpSocket.setup(executorService);
 
                     SjpMessenger messenger = new SjpMessenger(sjpSocket, nextMessengerId++);
+                    messenger.addReceiver(new SjpServerMediatorReceiver(messenger));
                     messengers.add(messenger);
                     listeners.forEach(listener -> listener.onConnect(messenger));
                 } catch (IOException ex) {
                     listeners.forEach(listener -> listener.onError(ex));
-                    ex.printStackTrace();
                 }
             }
             listeners.forEach(SjpServerMessengerListener::onClose);
-            // TODO: Remove disconnected sockets
         });
     }
 
@@ -63,5 +62,30 @@ public class SjpServerMediator {
 
     public void setGarbageCollector(SjpReceiverGarbageCollector garbageCollector) {
         this.garbageCollector = garbageCollector;
+    }
+
+    class SjpServerMediatorReceiver implements SjpMessengerReceiver {
+        private final SjpMessenger messenger;
+
+        SjpServerMediatorReceiver(SjpMessenger messenger) {
+            this.messenger = messenger;
+        }
+
+        @Override
+        public void onEvent(String action, Object data) {
+        }
+
+        @Override
+        public void onRequest(String action, Object data) {
+        }
+
+        @Override
+        public void onError(Throwable ex) {
+        }
+
+        @Override
+        public void onClose() {
+            messengers.remove(messenger);
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.recadel.sjp.messenger;
 
 import com.recadel.sjp.common.SjpMessage;
 import com.recadel.sjp.common.SjpMessageBuffer;
-import com.recadel.sjp.common.SjpMessageType;
 import com.recadel.sjp.exception.SjpException;
 import com.recadel.sjp.socket.SjpSocket;
 import com.recadel.sjp.socket.SjpSocketListener;
@@ -12,12 +11,14 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpMessenger  {
     private final long id;
     private final SjpSocket socket;
     private final List<SjpMessengerReceiver> receivers = new ArrayList<>();
     private long nextRequestId = 1;
+    private ScheduledExecutorService executorService;
 
     public SjpMessenger(SjpSocket socket, long id) {
         this.socket = socket;
@@ -44,7 +45,6 @@ public class SjpMessenger  {
     public void request(String action, Object data) {
         try {
             socket.send(SjpMessage.createRequest(action, nextRequestId++, data).toBuffer());
-            // TODO: Implement it!
         } catch (JSONException | IOException ex) {
             throw new SjpException("Error requesting", ex);
         }
@@ -56,6 +56,18 @@ public class SjpMessenger  {
 
     public long getId() {
         return id;
+    }
+
+    public ScheduledExecutorService getExecutorService() {
+        return executorService;
+    }
+
+    public void setExecutorService(ScheduledExecutorService executorService) {
+        this.executorService = executorService;
+    }
+
+    private void handleException(Throwable ex) {
+        receivers.forEach(listener -> listener.onError(ex));
     }
 
     class SjpMessengerListener implements SjpSocketListener {
@@ -78,11 +90,12 @@ public class SjpMessenger  {
 
         @Override
         public void onError(Throwable ex) {
-            ex.printStackTrace();
+            handleException(ex);
         }
 
         @Override
         public void onClose() {
+            receivers.forEach(SjpMessengerReceiver::onClose);
         }
     }
 }

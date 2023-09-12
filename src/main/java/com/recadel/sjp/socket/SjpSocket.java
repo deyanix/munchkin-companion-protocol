@@ -57,7 +57,6 @@ public class SjpSocket {
 			socket.getOutputStream().write(message.getBuffer());
 			socket.getOutputStream().flush();
 		} catch (IOException ex) {
-			ex.printStackTrace();
 			handleException(ex);
 			tryClose();
 		}
@@ -76,7 +75,6 @@ public class SjpSocket {
 					receiveData(new SjpMessageBuffer(data).slice(0, length - 1));
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
 				handleException(ex);
 				tryClose();
 			}
@@ -99,7 +97,6 @@ public class SjpSocket {
 		try {
 			close();
 		} catch (IOException ex) {
-			ex.printStackTrace();
 			handleException(ex);
 		}
 	}

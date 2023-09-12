@@ -120,7 +120,6 @@ public class SjpMessageBuffer {
 			}
 			return !tokener.more();
 		} catch (JSONException ex) {
-			ex.printStackTrace();
 			return false;
 		}
 	}

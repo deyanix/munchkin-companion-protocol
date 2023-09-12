@@ -76,24 +76,24 @@ public class HostGameController extends LocalGameController {
 			switch (action) {
 				case "players/create" -> {
 					if (!(data instanceof JSONObject playerData)) {
-						throw new RuntimeException("...");
+						throw new GameException("Bad data format");
 					}
-					createLocallyPlayer(PlayerData.fromJSON(playerData));
-					mediator.broadcast("player/create", data);
+					Player player = createLocallyPlayer(PlayerData.fromJSON(playerData));
+					mediator.broadcast("players/create", player);
 				}
 				case "players/update" -> {
 					if (!(data instanceof JSONObject player)) {
-						throw new RuntimeException("...");
+						throw new GameException("Bad data format");
 					}
 					updateLocallyPlayer(Player.fromJSON(player));
-					mediator.broadcast("player/update", data);
+					mediator.broadcast("players/update", player);
 				}
 				case "players/delete" -> {
 					if (!(data instanceof Integer playerId)) {
-						throw new RuntimeException("...");
+						throw new GameException("Bad data format");
 					}
 					deleteLocallyPlayer(playerId);
-					mediator.broadcast("player/delete", data);
+					mediator.broadcast("players/delete", playerId);
 				}
 				case "players/get" -> {
 					JSONArray array = new JSONArray(getPlayers().stream().map(Player::toJSON).toArray());
@@ -105,5 +105,15 @@ public class HostGameController extends LocalGameController {
         @Override
         public void onRequest(String action, Object data) {
         }
-    }
+
+		@Override
+		public void onError(Throwable ex) {
+			ex.printStackTrace();
+		}
+
+		@Override
+		public void onClose() {
+			System.out.println("[HOST] Closed client");
+		}
+	}
 }

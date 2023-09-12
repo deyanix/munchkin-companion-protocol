@@ -2,6 +2,7 @@ package com.munchkincompanion.game.controller;
 
 import com.munchkincompanion.game.entity.Player;
 import com.munchkincompanion.game.entity.PlayerData;
+import com.munchkincompanion.game.exception.GameException;
 import com.recadel.sjp.messenger.SjpMessenger;
 import com.recadel.sjp.messenger.SjpMessengerReceiver;
 import org.json.JSONArray;
@@ -40,28 +41,29 @@ public class GuestGameController extends GameController {
 	class GuestGameReceiver implements SjpMessengerReceiver {
 		@Override
 		public void onEvent(String action, Object data) {
+			System.out.println("[RECEIVER] Get event " + action);
 			switch (action) {
 				case "players/create" -> {
 					if (!(data instanceof JSONObject player)) {
-						throw new RuntimeException("...");
+						throw new GameException("Bad data format");
 					}
 					appendLocallyPlayer(Player.fromJSON(player));
 				}
 				case "players/update" -> {
 					if (!(data instanceof JSONObject player)) {
-						throw new RuntimeException("...");
+						throw new GameException("Bad data format");
 					}
 					updateLocallyPlayer(Player.fromJSON(player));
 				}
 				case "players/delete" -> {
 					if (!(data instanceof Integer playerId)) {
-						throw new RuntimeException("...");
+						throw new GameException("Bad data format");
 					}
 					deleteLocallyPlayer(playerId);
 				}
 				case "players/synchronize" -> {
 					if (!(data instanceof JSONArray array)) {
-						throw new RuntimeException("...");
+						throw new GameException("Bad data format");
 					}
 
 					List<Player> players = IntStream.range(0, array.length())
@@ -76,6 +78,16 @@ public class GuestGameController extends GameController {
 		@Override
 		public void onRequest(String action, Object data) {
 
+		}
+
+		@Override
+		public void onError(Throwable ex) {
+			ex.printStackTrace();
+		}
+
+		@Override
+		public void onClose() {
+			System.out.println("[GUEST] Closed");
 		}
 	}
 }
