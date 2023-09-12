@@ -4,9 +4,7 @@ import com.munchkincompanion.game.controller.HostGameController;
 import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.entity.PlayerGender;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
-import com.recadel.sjp.messenger.SjpMessenger;
 import com.recadel.sjp.messenger.SjpServerMediator;
-import com.recadel.sjp.messenger.SjpServerMessengerListener;
 
 import java.net.ServerSocket;
 import java.util.concurrent.Executors;

@@ -5,7 +5,6 @@ import com.recadel.sjp.common.SjpMessageBuffer;
 import com.recadel.sjp.exception.SjpException;
 import com.recadel.sjp.socket.SjpSocket;
 import com.recadel.sjp.socket.SjpSocketListener;
-
 import org.json.JSONException;
 
 import java.io.IOException;

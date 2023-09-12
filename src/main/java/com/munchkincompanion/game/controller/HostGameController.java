@@ -7,7 +7,6 @@ import com.recadel.sjp.messenger.SjpMessenger;
 import com.recadel.sjp.messenger.SjpMessengerReceiver;
 import com.recadel.sjp.messenger.SjpServerMediator;
 import com.recadel.sjp.messenger.SjpServerMessengerListener;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

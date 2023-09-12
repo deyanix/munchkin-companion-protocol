@@ -5,7 +5,6 @@ import com.munchkincompanion.game.entity.PlayerData;
 import com.munchkincompanion.game.entity.PlayerGender;
 import com.recadel.sjp.common.SjpReceiverGarbageCollector;
 import com.recadel.sjp.messenger.SjpMessenger;
-import com.recadel.sjp.messenger.SjpMessengerReceiver;
 import com.recadel.sjp.socket.SjpSocket;
 
 import java.net.InetSocketAddress;

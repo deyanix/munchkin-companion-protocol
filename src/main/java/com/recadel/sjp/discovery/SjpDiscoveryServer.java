@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class SjpDiscoveryServer extends SjpDiscoveryConnection {
