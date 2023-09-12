@@ -44,14 +44,14 @@ public class SjpReceiverGarbageCollector {
 			return;
 		}
 
-		future = executorService.scheduleAtFixedRate(() -> {
+		future = executorService.scheduleAtFixedRate(() ->
 			receivers.parallelStream()
 					.filter(receiver ->
 							receiver.getLastReceivedBuffer().until(
 									LocalDateTime.now(),
 									ChronoUnit.MILLIS) > receiverLifetime)
-					.forEach(SjpReceiver::clear);
-		}, 0, receiverLifetime, TimeUnit.MILLISECONDS);
+					.forEach(SjpReceiver::clear),
+				0, receiverLifetime, TimeUnit.MILLISECONDS);
 	}
 
 	public void stop() {

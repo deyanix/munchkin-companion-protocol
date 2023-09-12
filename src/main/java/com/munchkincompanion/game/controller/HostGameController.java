@@ -48,13 +48,11 @@ public class HostGameController extends LocalGameController {
     class HostGameServerMessengerListener implements SjpServerMessengerListener {
         @Override
         public void onConnect(SjpMessenger messenger) {
-			System.out.println("[HOST] Connecting");
             messenger.addReceiver(new HostGameMessengerReceiver(messenger));
         }
 
         @Override
         public void onClose() {
-			System.out.println("[HOST] Closing");
         }
 
         @Override
@@ -112,7 +110,6 @@ public class HostGameController extends LocalGameController {
 
 		@Override
 		public void onClose() {
-			System.out.println("[HOST] Closed client");
 		}
 	}
 }

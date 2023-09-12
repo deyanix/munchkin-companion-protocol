@@ -41,7 +41,6 @@ public class GuestGameController extends GameController {
 	class GuestGameReceiver implements SjpMessengerReceiver {
 		@Override
 		public void onEvent(String action, Object data) {
-			System.out.println("[RECEIVER] Get event " + action);
 			switch (action) {
 				case "players/create" -> {
 					if (!(data instanceof JSONObject player)) {
@@ -87,7 +86,6 @@ public class GuestGameController extends GameController {
 
 		@Override
 		public void onClose() {
-			System.out.println("[GUEST] Closed");
 		}
 	}
 }

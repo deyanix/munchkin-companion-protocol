@@ -73,7 +73,6 @@ public class SjpMessenger  {
         @Override
         public void onMessage(SjpMessageBuffer buffer) {
             try {
-                System.out.println("[MESSENGER] Received data " + buffer.toString());
                 SjpMessage message = SjpMessage.fromBuffer(buffer);
                 String action = message.getAction();
                 Object data = message.getData();

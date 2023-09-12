@@ -53,7 +53,6 @@ public class SjpSocket {
 			throw new SjpException("Cannot send a invalid message");
 		}
 		try {
-			System.out.println("[NATIVE] Sending " + message.toString());
 			socket.getOutputStream().write(message.getBuffer());
 			socket.getOutputStream().flush();
 		} catch (IOException ex) {
@@ -82,7 +81,6 @@ public class SjpSocket {
 	}
 
 	private void receiveData(SjpMessageBuffer buffer) {
-		System.out.println("[NATIVE] Receiving data");
 		receiver.receiveAll(buffer)
 				.forEach(message ->
 						listeners.forEach(listener -> listener.onMessage(message)));
